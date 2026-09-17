@@ -1,0 +1,222 @@
+body {
+  @apply overscroll-none bg-transparent;
+}
+
+:root {
+  --font-sans: var(--font-inter);
+  --header-height: calc(var(--spacing) * 12 + 1px);
+}
+
+.theme-scaled {
+  @media (min-width: 1024px) {
+    --radius: 0.6rem;
+    --text-lg: 1.05rem;
+    --text-base: 0.85rem;
+    --text-sm: 0.8rem;
+    --spacing: 0.222222rem;
+  }
+
+  [data-slot='card'] {
+    --spacing: 0.16rem;
+  }
+
+  [data-slot='select-trigger'],
+  [data-slot='toggle-group-item'] {
+    --spacing: 0.222222rem;
+  }
+}
+
+.theme-default,
+.theme-default-scaled {
+  --primary: var(--color-neutral-600);
+  --primary-foreground: var(--color-neutral-50);
+
+  @variant dark {
+    --primary: var(--color-neutral-500);
+    --primary-foreground: var(--color-neutral-50);
+  }
+}
+
+.theme-blue,
+.theme-blue-scaled {
+  --primary: var(--color-blue-600);
+  --primary-foreground: var(--color-blue-50);
+
+  @variant dark {
+    --primary: var(--color-blue-500);
+    --primary-foreground: var(--color-blue-50);
+  }
+}
+
+.theme-green,
+.theme-green-scaled {
+  --primary: var(--color-green-600);
+  --primary-foreground: var(--color-green-50);
+
+  @variant dark {
+    --primary: var(--color-green-500);
+    --primary-foreground: var(--color-green-50);
+  }
+}
+
+.theme-amber,
+.theme-amber-scaled {
+  --primary: var(--color-amber-600);
+  --primary-foreground: var(--color-amber-50);
+
+  @variant dark {
+    --primary: var(--color-amber-500);
+    --primary-foreground: var(--color-amber-50);
+  }
+}
+
+.theme-mono,
+.theme-mono-scaled {
+  --font-sans: var(--font-geist-mono);
+  --primary: var(--color-neutral-700);
+  --primary-foreground: var(--color-neutral-50);
+
+  @variant dark {
+    --primary: var(--color-neutral-400);
+    --primary-foreground: var(--color-neutral-950);
+  }
+}
+
+/* Amazon Seller Suite Theme — based on Stitch "Luminous Analytics" design */
+.theme-amazon,
+.theme-amazon-scaled {
+  --primary: #9d4300;
+  --primary-foreground: #ffffff;
+  --primary-container: #f97316;
+  --on-primary-container: #582200;
+  --secondary: #575e70;
+  --secondary-foreground: #ffffff;
+  --secondary-container: #d9dff5;
+  --on-secondary-container: #5c6274;
+  --tertiary: #585f6c;
+  --tertiary-container: #949baa;
+  --background: #f7f9fb;
+  --foreground: #191c1e;
+  --card: #ffffff;
+  --card-foreground: #191c1e;
+  --surface: #ffffff;
+  --surface-container: #eceef0;
+  --surface-container-high: #e6e8ea;
+  --surface-container-highest: #e0e3e5;
+  --surface-container-low: #f2f4f6;
+  --surface-container-lowest: #ffffff;
+  --surface-dim: #d8dadc;
+  --surface-variant: #e0e3e5;
+  --on-surface-variant: #584237;
+  --muted: #f7f9fb;
+  --muted-foreground: #6b7280;
+  --accent: #ffb690;
+  --accent-foreground: #341100;
+  --destructive: #ba1a1a;
+  --destructive-foreground: #ffffff;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #f97316;
+  --radius: 0.75rem;
+  --chart-1: #f97316;
+  --chart-2: #9d4300;
+  --chart-3: #575e70;
+  --chart-4: #ffb690;
+  --chart-5: #949baa;
+  --sidebar: #f8fafc;
+  --sidebar-foreground: #191c1e;
+  --sidebar-primary: #f97316;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #fff7ed;
+  --sidebar-accent-foreground: #783200;
+  --sidebar-border: #e2e8f0;
+  --sidebar-ring: #f97316;
+  --shibsa-brand-color: #f97316;
+
+  @variant dark {
+    --primary: #ffb690;
+    --primary-foreground: #341100;
+    --primary-container: #783200;
+    --on-primary-container: #ffdbca;
+    --background: #1a1c1e;
+    --foreground: #e0e3e5;
+    --card: #2d3133;
+    --card-foreground: #e0e3e5;
+    --surface: #2d3133;
+    --surface-container: #3c4042;
+    --border: #3c4042;
+    --input: #3c4042;
+    --ring: #ffb690;
+    --sidebar: #1a1c1e;
+    --sidebar-foreground: #e0e3e5;
+    --sidebar-accent: #2d3133;
+    --sidebar-border: #3c4042;
+    --muted-foreground: #9ca3af;
+    --success: #34d399;
+    --warning: #fbbf24;
+    --info: #60a5fa;
+  }
+}
+
+/* Semantic status colors for light mode (applied globally) */
+:root {
+  --success: #16a34a;
+  --warning: #d97706;
+  --info: #2563eb;
+}
+
+.theme-green,
+.theme-green-scaled {
+  --primary: var(--color-lime-600);
+  --primary-foreground: var(--color-lime-50);
+
+  @variant dark {
+    --primary: var(--color-lime-600);
+    --primary-foreground: var(--color-lime-50);
+  }
+}
+
+.theme-amber,
+.theme-amber-scaled {
+  --primary: var(--color-amber-600);
+  --primary-foreground: var(--color-amber-50);
+
+  @variant dark {
+    --primary: var(--color-amber-500);
+    --primary-foreground: var(--color-amber-50);
+  }
+}
+
+.theme-mono,
+.theme-mono-scaled {
+  --font-sans: var(--font-mono);
+  --primary: var(--color-neutral-600);
+  --primary-foreground: var(--color-neutral-50);
+
+  @variant dark {
+    --primary: var(--color-neutral-500);
+    --primary-foreground: var(--color-neutral-50);
+  }
+
+  .rounded-xs,
+  .rounded-sm,
+  .rounded-md,
+  .rounded-lg,
+  .rounded-xl {
+    @apply !rounded-none;
+    border-radius: 0;
+  }
+
+  .shadow-xs,
+  .shadow-sm,
+  .shadow-md,
+  .shadow-lg,
+  .shadow-xl {
+    @apply !shadow-none;
+  }
+
+  [data-slot='toggle-group'],
+  [data-slot='toggle-group-item'] {
+    @apply !rounded-none !shadow-none;
+  }
+}

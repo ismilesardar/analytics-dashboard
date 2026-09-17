@@ -1,0 +1,248 @@
+@import 'tailwindcss';
+
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+@import './theme.css';
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+  --shibsa-brand-color: oklch(73.83% 0.169 62.71);
+  --success: oklch(0.527 0.154 150.069);
+  --warning: oklch(0.627 0.194 70);
+  --info: oklch(0.546 0.245 262.881);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.269 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.371 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.439 0 0);
+  --shibsa-brand-color: oklch(73.83% 0.169 62.71);
+  --success: oklch(0.723 0.219 149.579);
+  --warning: oklch(0.795 0.184 86.047);
+  --info: oklch(0.685 0.169 237.323);
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+
+  --color-lp-bg: #0a0f1e;
+  --color-lp-card: #111827;
+  --color-lp-accent: #3b82f6;
+  --color-lp-highlight: #6366f1;
+
+  --background-image-shibsa-conic: conic-gradient(
+    from 90deg,
+    #f00 5deg,
+    #eab308 63deg,
+    #f38e00 115deg,
+    #f38e00 170deg,
+    #f38e00 220deg,
+    #f38e00 286deg,
+    #f38e00 1turn
+  );
+  --brand-color: var(--shibsa-brand-color);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* View Transition Wave Effect */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  /* Ensure the outgoing view (old theme) is beneath */
+  z-index: 0;
+}
+
+::view-transition-new(root) {
+  /* Ensure the incoming view (new theme) is always on top */
+  z-index: 1;
+}
+
+@keyframes reveal {
+  from {
+    /* Use CSS variables for the origin, defaulting to center if not set */
+    clip-path: circle(0% at var(--x, 50%) var(--y, 50%));
+    opacity: 0.7;
+  }
+
+  to {
+    /* Use CSS variables for the origin, defaulting to center if not set */
+    clip-path: circle(150% at var(--x, 50%) var(--y, 50%));
+    opacity: 1;
+  }
+}
+
+::view-transition-new(root) {
+  /* Apply the reveal animation */
+  animation: reveal 0.4s ease-in-out forwards;
+}
+
+.svg-box-inner {
+  mask-image: linear-gradient(black, transparent 320px),
+    linear-gradient(90deg, transparent, black 51%, black 60%, transparent);
+  -webkit-mask-image: linear-gradient(black, transparent 320px),
+    linear-gradient(90deg, transparent, black 51%, black 60%, transparent);
+}
+
+/* Scan line animation for image analysis */
+@keyframes scan-line {
+  0% {
+    top: -2px;
+  }
+  100% {
+    top: calc(100% - 2px);
+  }
+}
+
+.animate-scan-line {
+  animation: scan-line 2s ease-in-out infinite;
+}
+
+.svg-box-outer {
+  /* Define the mask gradients */
+  mask-image: linear-gradient(to bottom, #0000, #000 38% 66%, #0000),
+    linear-gradient(to right, #0000, #000 22% 75%, #0000);
+
+  /* Webkit prefix for Safari support */
+  -webkit-mask-image: linear-gradient(to bottom, #0000, #000 38% 66%, #0000),
+    linear-gradient(to right, #0000, #000 22% 75%, #0000);
+
+  /* Ensure the masks intersect (multiplication) rather than add */
+  mask-composite: intersect;
+  -webkit-mask-composite: source-in; /* 'source-in' acts as intersection in Webkit */
+
+  /* Optional: Ensure the container wraps content correctly */
+  width: 100%;
+  overflow: hidden;
+}
+
+.billing-accordion-trigger > h3 {
+  width: 100%;
+}
+
+/*
+ * Chat wallpaper: a faint repeating texture behind the message thread,
+ * WhatsApp-style. Hardcoded fill colors here are a deliberate exception to
+ * the "no hex" rule — this is a decorative tiled asset, not a design token,
+ * and needs a literal color baked into the SVG data URI per theme.
+ */
+.chat-wallpaper {
+  background-color: var(--background);
+  background-repeat: repeat;
+  background-size: 26px 26px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26'%3E%3Ccircle cx='2' cy='2' r='1.4' fill='%23000000' fill-opacity='0.05'/%3E%3Ccircle cx='15' cy='9' r='1.4' fill='%23000000' fill-opacity='0.05'/%3E%3Ccircle cx='9' cy='19' r='1.4' fill='%23000000' fill-opacity='0.05'/%3E%3Ccircle cx='22' cy='22' r='1.4' fill='%23000000' fill-opacity='0.05'/%3E%3C/svg%3E");
+}
+
+.dark .chat-wallpaper {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26'%3E%3Ccircle cx='2' cy='2' r='1.4' fill='%23ffffff' fill-opacity='0.06'/%3E%3Ccircle cx='15' cy='9' r='1.4' fill='%23ffffff' fill-opacity='0.06'/%3E%3Ccircle cx='9' cy='19' r='1.4' fill='%23ffffff' fill-opacity='0.06'/%3E%3Ccircle cx='22' cy='22' r='1.4' fill='%23ffffff' fill-opacity='0.06'/%3E%3C/svg%3E");
+}
