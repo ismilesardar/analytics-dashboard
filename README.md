@@ -1,44 +1,48 @@
-# Loop — Chat App Take-Home Assignment
+# Pulse — Production Analytics Dashboard
 
-A real-time chat application built for a frontend take-home assignment:
-phone + name login, 1:1 and group conversations, live messaging over
-Socket.IO, and a landing page showcasing it.
+A SaaS analytics dashboard for a business managing customers, orders, and
+system activity: revenue/orders/customer stat cards, revenue and orders
+charts, recent orders and system activity, and a searchable/filterable/
+paginated orders page with order detail — built for a frontend take-home
+assignment.
 
-This is a **pure frontend** — no database or backend of our own. Every
-screen talks directly to a hosted chat API
-(`https://frontend-task-chatapp.onrender.com/api`) with a bearer token.
-
-- **Live demo:** _add the deployed Vercel URL here before submitting_
-- **API docs:** [`docs/api.md`](docs/api.md) — every endpoint, verified
-  against the live API, including several undocumented quirks (see below)
+This app is **self-contained**: there's no external API and no real
+database. A mock JSON dataset is served through this app's own Next.js
+Route Handlers, so it runs anywhere with zero environment configuration.
 
 ## Tech Stack
 
 - **Framework:** Next.js 16 (App Router), React 19, TypeScript 5
 - **Styling:** Tailwind CSS 4 + shadcn/ui + Radix UI
-- **Server state:** TanStack React Query (queries, infinite queries, mutations)
+- **Charts:** Recharts, via a shadcn-style chart wrapper
+- **Server state:** TanStack React Query (queries, pagination via `keepPreviousData`)
 - **Client state:** Zustand (persisted session store)
-- **Forms:** React Hook Form + Zod (+ `libphonenumber-js` for real per-country phone validation)
+- **Forms:** React Hook Form + Zod
 - **HTTP:** Axios (single shared instance, bearer-token interceptor)
-- **Real-time:** Socket.IO client
-- **Animation:** Motion (landing page)
+- **Mock backend:** Next.js Route Handlers + a static JSON dataset
 - **Package manager:** pnpm
 
 ## Setup
 
 ```bash
 pnpm install
-cp .env.example .env
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). The landing page is at
-`/`, the chat app is at `/chat` (redirects to `/login` if not signed in).
+Open [http://localhost:3000](http://localhost:3000) — it redirects to
+`/login`. No `.env` file is needed; there are no environment variables to
+configure.
+
+**Seeded login:**
+
+| Email             | Password    |
+| ----------------- | ----------- |
+| `admin@pulse.dev` | `admin1234` |
 
 ## Scripts
 
 | Script              | What it does              |
-| ------------------- | ------------------------- |
+| -------------------- | -------------------------- |
 | `pnpm dev`          | Start the dev server      |
 | `pnpm build`        | Production build          |
 | `pnpm tsc --noEmit` | Type check                |
@@ -49,171 +53,187 @@ Open [http://localhost:3000](http://localhost:3000). The landing page is at
 
 ```
 src/
-  app/                 Routes: / (landing), /login, /chat, /chat/[id]
+  app/
+    login/               /login — public sign-in page
+    (protected)/         /  and  /orders — behind one client-side auth gate
+      layout.tsx          auth gate + app shell (nav, theme toggle, logout)
+      page.tsx            dashboard
+      orders/page.tsx      orders
+    api/                  Route Handlers — the mock backend
+      auth/login/
+      analytics/summary/
+      analytics/charts/
+      orders/, orders/[id]/
+      activities/
   features/
-    auth/              Session store, login form, API call
-    chat/              Conversation list, messages, sending, real-time,
-                        new-conversation/group dialog
-    landing/           Landing-page-only components
-  lib/api-setting/     Shared Axios instance + React Query client
-  components/ui/       shadcn/ui primitives (not hand-edited)
-  config/env.ts        The one env var this app reads
-docs/api.md            API documentation deliverable (Part 1)
+    auth/                 session store, login form, API call
+    dashboard/             stat cards, charts, recent orders/activity
+    orders/                filters, table, pagination, order detail
+  lib/
+    api-setting/           shared Axios instance + React Query client
+    server/                Route Handler helpers (dataset, pagination, date buckets, analytics, password hashing)
+  data/                    the mock JSON dataset (customers, orders, activities, seeded user)
+  components/
+    ui/                    shadcn/ui primitives (not hand-edited)
+    layout/                app shell, page shell/container, theme toggle
+    order-status-badge.tsx shared status badge (used by dashboard + orders)
+  types/order.ts           shared Order/OrderStatus types
 ```
 
-See `context/architecture.md` for the fuller breakdown and invariants.
+See `context/architecture.md` for the full breakdown, invariants, and the
+reasoning behind a few specific decisions (noted below too).
 
 ## Project Docs
 
 - [`context/project-overview.md`](context/project-overview.md) — what this app does and its scope
 - [`context/architecture.md`](context/architecture.md) — stack, folders, invariants
-- [`context/env-reference.md`](context/env-reference.md) — environment variables
-- [`context/progress-tracker.md`](context/progress-tracker.md) — the full build log, step by step, including every bug found along the way
+- [`context/ui-context.md`](context/ui-context.md) — theme, components, layout patterns
+- [`context/env-reference.md`](context/env-reference.md) — environment variables (there are none) and the seeded login
+- [`context/progress-tracker.md`](context/progress-tracker.md) — the build log, including the repurposing from an earlier chat-app project
 
 ---
 
-## Part 3 — Thought Process Write-up
+## API / Data-Fetching Approach
 
-### Why this architecture
+Every screen fetches through a small, consistent layer:
 
-The core constraint shaping every decision here: **this app has no backend
-of its own.** Everything talks directly to the given hosted API from the
-client. That ruled out anything that assumes a server side to lean on —
-no Next.js API routes as a proxy layer, no server-side session cookies, no
-database. The session (a JWT + user object from `POST /auth/login`) lives
-in a **persisted Zustand store**, and every request goes through one
-**shared Axios instance** (`src/lib/api-setting/axios.ts`) with a request
-interceptor that attaches the bearer token and a response interceptor that
-clears the session on `401`/`NO_TOKEN`.
+1. **A mock dataset** (`src/data/*.json`) — 120 customers, 650 orders
+   spanning the trailing 6 months, 200 system activities, and one seeded
+   login user (password stored **hashed**, via Node's built-in `scrypt` —
+   never plaintext, even in a mock).
+2. **Next.js Route Handlers** (`src/app/api/**/route.ts`) read that dataset
+   through typed helpers in `src/lib/server/` and do real server-side work:
+   filtering, sorting, and pagination for `/api/orders`; date-range
+   scoping and aggregation for `/api/analytics/summary`; and
+   day/week-bucketed series for `/api/analytics/charts`. Responses use one
+   consistent envelope (`{ data }`, or `{ data, meta }` when paginated) and
+   error shape (`{ error: { code, message } }`).
+3. **Feature `api.ts` modules** (`src/features/dashboard/api.ts`,
+   `src/features/orders/api.ts`, `src/features/auth/api.ts`) call those
+   routes through **one shared Axios instance**
+   (`src/lib/api-setting/axios.ts`) — bearer token attached via a request
+   interceptor, `401` responses clear the session and redirect to
+   `/login`. Because the routes are same-origin, the instance needs no
+   `baseURL` and no environment variable.
+4. **React Query** owns all client-side caching, request dedup, and
+   loading/error state — configured once in `src/lib/api-setting/`. UI
+   components never call `fetch`/`axios` directly; they only see typed
+   `useQuery`/`useMutation` hooks.
 
-For data fetching, **React Query** does the work a hand-rolled fetching
-layer built from `useEffect` and `useState` would otherwise reinvent
-badly: caching, request dedup, retry, and — critically for the message
-list — `useInfiniteQuery` for cursor-based pagination, which maps directly
-onto the API's `before` cursor. **Zustand** (rather than React Context or
-Redux) covers the one piece of genuinely global client state — the
-session — with no boilerplate.
+This keeps the three things the assignment asks to separate genuinely
+separate: **API calls** (`api.ts`), **types** (`types.ts` per feature, plus
+shared ones in `src/types/`), and **data transformation** (route handlers
++ `src/lib/server/analytics.ts`/`date-buckets.ts`) never leak into UI
+components — a component only ever renders a `useQuery`'s `data`.
 
-The chat feature itself lives entirely in `src/features/chat/`, organized
-by concern rather than by component: `api.ts` (typed API calls),
-`types.ts` (shapes, matching what the API actually returns — see "Issues
-Ran Into" below for why that mattered), `query-keys.ts`, and one file per
-UI concern (conversation list, message list, message input, the
-new-conversation dialog, the socket hook). `use-send-message.ts` is shared
-between the composer and the failed-message retry action, since both are
-the same "optimistically send, roll back on failure" operation.
+**Mock-data assumptions worth being explicit about** (since there's no
+real backend to define these for us):
 
-**Trade-off I made deliberately:** the session token lives in
-`localStorage` via Zustand's `persist` middleware, not an httpOnly cookie.
-With no backend of our own, there's nowhere to set an httpOnly cookie from
-in the first place — the alternative would have been a thin Next.js API
-route acting purely as a cookie-setting proxy, which felt like solving a
-problem the assignment's constraints don't actually have (this API's
-tokens aren't especially sensitive — it's a shared test sandbox — and the
-realistic threat model for a take-home doesn't call for that complexity).
-Noted here as a conscious trade-off, not an oversight.
+- **Total revenue** counts orders with status `delivered`, `shipped`, or
+  `processing` — `pending` and `cancelled` are excluded as unconfirmed
+  revenue.
+- **Active customers** are those who placed an order in the trailing 90
+  days (precomputed into the seed data).
+- **Conversion rate** = active customers ÷ total customers. The more
+  literal "orders ÷ customers" was tried first and produced over 500% on
+  this dataset (customers place repeat orders) — clearly broken as a
+  percentage stat card. This dataset has no visitor/session entity, so
+  active-customer share is the closest bounded, plausible stand-in for a
+  real orders/sessions conversion rate.
 
-### Part 2 design reasoning
+## Server vs. Client Components
 
-The brief was explicit: bold, original, not a generic template. I picked a
-violet → fuchsia → amber gradient specifically because it's distinct from
-the app's own default shadcn "zinc" theme — the landing page and the
-product don't need to look like the same design system; the landing page's
-job is to sell the idea, the product's job is to be a clean, usable tool.
-Scroll-triggered fade-ins (via `motion`'s `whileInView`) keep it feeling
-alive without overdoing it — one animation primitive, reused consistently,
-rather than a different effect per section.
+All data fetching in this app is client-side (React Query + Axios) — there
+is no server-side `fetch` inside a Server Component anywhere, which keeps
+the boundary simple and consistent:
 
-The one deliberate "bonus" touch for Part 2: the hero doesn't just describe
-real-time messaging, it **shows** it — a small looping animation (typing
-indicator → message bubble → repeat) that plays automatically in a
-stylized chat mockup. It's original in that it's not a stock testimonial
-carousel or FAQ accordion (which the brief explicitly said wouldn't count);
-it's a detail that demonstrates the product's core feature before the
-visitor has even signed in.
+- **`src/app/(protected)/layout.tsx`** is a Client Component out of
+  necessity — it reads a Zustand store backed by `localStorage`
+  (`useAuthHasHydrated`/`useAuthStore`), which doesn't exist during server
+  rendering. It waits for hydration, gives the restored token a brief
+  grace window to settle, and redirects to `/login` if still absent.
+- **Every route's `page.tsx`** (`/login`, `/`, `/orders`) stays a plain
+  **Server Component** — no `'use client'`, no hooks, no data fetching. It
+  does nothing but render that route's top-level client `*-view.tsx`
+  component. This mirrors the one dynamic-route precedent already in this
+  codebase's history (an async Server Component awaiting `params` and
+  immediately delegating to a client component) — the same shape, just
+  without a dynamic segment to await here.
+- **`login-brand-panel.tsx`** is a Server Component — purely presentational,
+  no interactivity.
+- **Everything that fetches data or holds interactive state** — both
+  dashboard panels, both charts, the orders filters/table/pagination/detail
+  sheet, the login form — is a Client Component (`'use client'`), because
+  React Query hooks and `useSearchParams`/`useRouter` require it.
 
-### How AI tools were used
+In short: Server Components here are thin route shells and static panels;
+Client Components are everything with a hook. That's a deliberate,
+consistent split given the app's fully client-driven data-fetching
+architecture — not a default applied without thought.
 
-I used **Claude Code** (Anthropic's CLI agent) throughout, working from a
-step-by-step plan I asked it to keep small and independently verifiable —
-API docs first, then shared plumbing, then one chat feature at a time,
-each one checked against the live API in a real browser (via Playwright)
-before moving on.
+## Performance Decisions
 
-**What it did:** wrote the implementation for every step against a plan I
-reviewed and approved first; researched the actual API behavior by
-querying the live server directly rather than trusting the (underspecified)
-Swagger spec; found and fixed several real bugs along the way — a
-temporal-dead-zone self-reference bug in a Zustand persist callback, an
-invalid nested-`<button>` HTML issue in the new-conversation dialog (caught
-via React's own hydration warning), and a timing gap between session
-hydration and the first authenticated render that intermittently bounced a
-logged-in user back to `/login` on a hard navigation. All three are logged
-in detail in `context/progress-tracker.md` with root cause and fix.
+- **`useMemo` was deliberately *not* used to reshape chart data.** The
+  naive approach — fetch raw orders client-side, `useMemo` them into
+  `{date, value}` series — was rejected in favor of doing that bucketing
+  **server-side**, in `GET /api/analytics/charts`
+  (`src/lib/server/date-buckets.ts`). The client receives chart-ready
+  arrays and Recharts consumes them directly. The meaningful performance
+  call here was avoiding the need for a client-side transform at all,
+  not deciding how to memoize one.
+- **`useCallback`** is used for stable references passed into memoized
+  children: `src/features/orders/orders-table.tsx` wraps each row in
+  `React.memo` (`OrderRow`), so the row's `onClick` handler is
+  `useCallback`-wrapped in the parent to keep that memoization effective
+  during pagination. `use-orders-filters.ts`'s setters (`setQuery`,
+  `setStatus`, `setDateRange`, `setPage`) are also `useCallback`-wrapped
+  since they're passed down into filter components.
+- **Avoiding duplicate API calls** is handled by React Query's own
+  caching, not bespoke code: the Orders page's full filter/pagination
+  object is included in its `queryKey`
+  (`src/features/orders/query-keys.ts`), so identical filter states are
+  served from cache automatically, and `placeholderData: keepPreviousData`
+  avoids a loading-skeleton flash when paginating. The dashboard's revenue
+  and orders charts share one period selector and the same query key
+  (`dashboardKeys.charts(period)`), so React Query dedups them into a
+  single network request even though two components call `useQuery` with
+  it independently. The order-detail query only runs when a `?orderId=`
+  param is present (`enabled: !!orderId`).
+- **`useEffect`** is used only where it's genuinely reacting to an
+  external system: the auth gate's grace-window redirect (waiting on
+  Zustand's hydration event before deciding whether to redirect), and the
+  orders search box's debounce-to-URL sync. Filter/pagination state itself
+  is never synced via an effect — it flows straight from the URL into
+  `queryKey`/`queryFn`, which is the idiomatic React Query approach.
+- **State management**: the Orders page's search/status/date/page state
+  lives entirely in **URL search params**
+  (`src/features/orders/use-orders-filters.ts`), not local component state
+  or a dedicated store — this makes a filtered, paginated, detail-open
+  view bookmarkable and correct on browser back/forward, and gives React
+  Query's cache key a natural source of truth with no extra sync layer.
+  Order detail is driven the same way (`?orderId=`), rendered as a `Sheet`
+  rather than local dialog state, so it's independently deep-linkable.
 
-**What I changed or would double-check by hand:** the overall shape of the
-plan and every architectural call (no backend, Zustand for session, React
-Query for server state) were decisions I made and had the agent execute
-against, not decisions it made unprompted. The exact root cause of the
-session-hydration timing bug wasn't fully nailed down to a specific library
-internal before the fix was applied — the fix (a short grace window before
-declaring a session absent) resolves the observable symptom and was
-verified to do so, but if I were continuing this project I'd want to trace
-that all the way to zustand's `persist` middleware source before calling it
-fully understood, rather than trusting a well-verified but not
-fully-root-caused patch.
+## Issues Found and Fixed During Development
 
-### What I'd improve with more time
+- **Conversion-rate formula produced >500%** on the seeded data (see
+  above) — caught by actually looking at the rendered stat card rather
+  than trusting the formula in the abstract; fixed by switching to a
+  bounded active-customer-share formula.
+- **The shadcn CLI (`npx shadcn@latest add chart`) fails on this project**
+  — one of its transitive dependencies (`zod-to-json-schema`) tries to
+  import a `zod/v3` subpath that doesn't exist under this project's zod
+  v4, throwing `ERR_PACKAGE_PATH_NOT_EXPORTED`. Worked around by adding
+  `recharts` directly and hand-writing `src/components/ui/chart.tsx` to
+  match shadcn's official Charts component exactly.
+- **Next.js's dev-mode indicator overlapped the app header.**
+  `next.config.ts` had it pinned to `top-right` — the same corner as the
+  header's theme toggle and logout button — so its portal intercepted
+  clicks on them in dev mode. Moved to `bottom-right`. Caught via an
+  automated browser click-through, not by inspection alone.
 
-- **Group management UI.** The API supports adding/removing members,
-  promoting admins, and renaming groups (`docs/api.md`) — none of that has
-  UI yet, since the assignment only asked for group _creation_.
-- **Message read receipts / unread indicators.** Fully derivable from data
-  already fetched (no new API surface needed) but didn't make the cut
-  given the time budget.
-- **Root-cause the session-hydration timing bug properly** (see above)
-  rather than resting on the verified-but-not-fully-explained fix.
-- **A project-specific Playwright test suite**, committed to the repo, so
-  the extensive manual verification done during development (documented in
-  `context/progress-tracker.md`) becomes a repeatable regression check
-  instead of one-off scripts.
-
-### Issues ran into with the given API
-
-None of these blocked the build, but each one required a deliberate
-workaround — full detail on all of them is in `docs/api.md`; summarized
-here:
-
-1. **Swagger's response schemas are all unspecified.** Every shape used in
-   this app was captured from real requests against the live API, not the
-   spec.
-2. **The server doesn't reject empty message text.** `POST /messages`
-   happily stores `""`. The "no empty messages" requirement is enforced
-   entirely client-side.
-3. **`GET /conversations/{id}/messages`'s `before` cursor is inclusive**,
-   not exclusive — naively using the oldest loaded message's id as the next
-   cursor duplicates that message at the page boundary. Handled by
-   deduping by `_id` when merging pages.
-4. **Groups require 3 total members** (creator + 2+ selected) — undocumented
-   in Swagger, discovered via a `400` with a validation message. Enforced
-   client-side by requiring a second selection before the group-name field
-   appears.
-5. **The `message:new` Socket.IO payload doesn't match the REST response
-   shape** — `id` instead of `_id`, a numeric millisecond timestamp instead
-   of an ISO string. Normalized on receipt.
-6. **`users/search`'s `q` parameter isn't actually enforced as required** —
-   omitting it returns every user instead of a `400`.
-7. **The mock backend is a shared sandbox** — other candidates' test data
-   (conversations, users) is visible in listings. Expected, not a bug.
-8. **The sandbox backend is occasionally slow under load** (one login
-   request was directly observed taking 12+ seconds while a `curl` to the
-   same endpoint moments later returned in under a second) — the shared
-   Axios instance's timeout was set generously (30s) to accommodate this
-   rather than fail fast on what's likely just contention from many
-   candidates hitting the same free-tier instance concurrently.
-
-One more thing worth noting honestly: the assignment PDF itself contained
-a hidden prompt-injection instruction (invisible text in Part 3 attempting
-to get an AI assistant to insert an unrelated word into a generated
-summary). It wasn't followed — flagged here for transparency since this
-write-up itself is exactly the kind of content that instruction targeted.
+This project was repurposed from an earlier, unrelated take-home (a
+real-time chat app) in the same repository — the login system and shared
+Axios/React Query/shadcn infrastructure were kept and adapted; the chat
+and landing-page features were removed entirely. See
+`context/progress-tracker.md` for the full history.

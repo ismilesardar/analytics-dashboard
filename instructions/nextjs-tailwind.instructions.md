@@ -190,17 +190,18 @@ Do not create example/demo files (like ModalExample.tsx) in the main codebase un
 
 ## 11. Project-Specific Stack
 
-This app is a pure frontend against an external chat API — no database, no
-auth provider, no backend of our own. Always reach for these instead of
-introducing alternatives.
+This app is a self-contained analytics dashboard — no external API, no
+real database. Mock data lives in `src/data/*.json` and is served through
+this app's own Next.js Route Handlers under `src/app/api/`. Always reach
+for these instead of introducing alternatives.
 
 | Area                         | Library / Location                                                                                                       |
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| External API base URL        | `src/config/env.ts` — the only place the API's base URL is read from `process.env`                                       |
-| HTTP client                  | `axios` — shared instance + interceptors in `src/lib/api-setting/` (bearer token attach, `401` handling)                 |
+| Mock dataset + Route Handlers | `src/data/*.json`, `src/app/api/**/route.ts`, server helpers in `src/lib/server/`                                       |
+| HTTP client                  | `axios` — shared instance + interceptors in `src/lib/api-setting/` (bearer token attach, `401` handling), no `baseURL` needed since routes are same-origin |
 | Server state / data fetching | `@tanstack/react-query` — client + provider in `src/lib/api-setting/`                                                    |
-| Real-time                    | `socket.io-client` — listens for `message:new` against the API's origin                                                  |
-| Session (JWT + user)         | `zustand` (persisted) — lives in `src/features/auth/`. There is **no `middleware.ts`** and no server session of our own. |
+| Charts                       | `recharts`, via `src/components/ui/chart.tsx` (shadcn-style wrapper — see `context/architecture.md` for why it was hand-added) |
+| Session (mock token + user)  | `zustand` (persisted) — lives in `src/features/auth/`. There is **no `middleware.ts`**; gating is client-side in `src/app/(protected)/layout.tsx`. |
 | Forms & validation           | `react-hook-form` + `zod` + `@hookform/resolvers`                                                                        |
 | UI components                | shadcn/ui (Radix UI base) — components in `src/components/ui/`                                                           |
 | Icons                        | `lucide-react`, `@tabler/icons-react`                                                                                    |

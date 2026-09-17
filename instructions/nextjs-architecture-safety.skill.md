@@ -7,7 +7,7 @@ applyTo: 'src/**/*.{ts,tsx,js,jsx}'
 
 ## Purpose
 
-Use this workflow for any code change that may affect product structure, the shared API client layer, shared models, or multiple features. This app has no database or backend of its own — it's a pure frontend against the external chat API.
+Use this workflow for any code change that may affect product structure, the shared API client layer, shared models, or multiple features. This app has no real database — data lives in a mock JSON dataset served through this app's own Next.js Route Handlers.
 
 ## Workflow
 
@@ -22,7 +22,7 @@ Use this workflow for any code change that may affect product structure, the sha
    - `src/utils/`
    - `src/config/`
 3. Prefer existing patterns and abstractions over new ad hoc code.
-4. Keep API calls, request/response shapes, and Socket.IO event handling standard and centralized through `src/lib/api-setting/`.
+4. Keep API calls and request/response shapes standard and centralized through `src/lib/api-setting/`.
 5. Split dependencies and related logic into multiple files when the task naturally requires it.
 6. Before editing, check for side effects on other features, shared utilities, and data flow.
 7. Make the smallest safe change that preserves the product architecture.

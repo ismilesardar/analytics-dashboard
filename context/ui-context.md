@@ -3,35 +3,30 @@
 ## Theme
 
 Default shadcn "zinc" base theme, light/dark via `next-themes` (toggle in
-`src/components/layout/ThemeToggle/`). The landing page (Part 2 of the
-assignment) gets its own deliberate palette/typography direction on top of
-this base — documented here once that design lands.
+`src/components/layout/ThemeToggle/`, mounted in the app header —
+`src/components/layout/app-shell.tsx`). The login page keeps a deliberate
+gradient brand panel exception (see below); everything else uses theme
+tokens.
 
 ## Color Tokens
 
 Defined as CSS custom properties in `src/app/globals.css` /
 `src/app/theme.css` (shadcn's default token set — `--background`,
-`--foreground`, `--primary`, `--muted`, `--border`, `--destructive`, etc.).
-All components must use these tokens, no hardcoded hex values.
+`--foreground`, `--primary`, `--muted`, `--border`, `--destructive`,
+`--success`, `--warning`, `--info`, `--chart-1`..`--chart-5`, etc.). All
+components must use these tokens, no hardcoded hex values.
 
-The landing page (`src/app/page.tsx`, `src/features/landing/`) and the
-login page (`src/app/login/page.tsx`, `src/features/auth/login-brand-panel.tsx`)
-are the one deliberate exception to the token rule above — they're
-marketing/entry surfaces with their own palette, distinct from the app's
-shadcn theme (per explicit design direction), using Tailwind's built-in
-`indigo`/`orange`/`slate` palette directly rather than app-wide tokens.
+- Order status badges (`src/components/order-status-badge.tsx`) map each
+  status to a semantic token: `pending` → warning, `processing` → info,
+  `shipped` → chart-4, `delivered` → success, `cancelled` → destructive.
+- The revenue chart uses `--chart-1`, the orders chart uses `--chart-2` —
+  set via the `ChartConfig` passed to `ChartContainer`, not hardcoded.
 
-This palette **is dark-mode aware**: every `slate`-family background/
-border/text class is paired with a `dark:` class one or two steps darker/
-lighter (e.g. `bg-white` → `dark:bg-slate-950`, `bg-slate-50` →
-`dark:bg-slate-900`, `text-slate-900` → `dark:text-slate-50`,
-`text-slate-500` → `dark:text-slate-400`, `border-slate-100` →
-`dark:border-slate-800`) so these pages don't stay stuck light while the
-rest of the app is dark. The bold gradient bands — the "How it works"
-section, the final CTA band, and the login brand panel (all
-indigo→orange/violet/rose gradients with white text) — are left
-unchanged across themes on purpose: they're self-contained, high-contrast
-color blocks that read fine in either theme without adaptation.
+The login page (`src/app/login/page.tsx`,
+`src/features/auth/login-brand-panel.tsx`) is the one deliberate exception
+to the token rule — it's a marketing/entry surface with its own palette
+(Tailwind's `indigo`/`orange`/`slate`), paired with `dark:` classes so it
+still reads correctly in dark mode.
 
 ## Typography
 
@@ -51,30 +46,51 @@ Using shadcn's default token-driven radius (`--radius`) — no custom overrides.
 shadcn/ui on top of Tailwind CSS 4 + Radix UI primitives.
 
 - Components live in `src/components/ui/`
-- Add new components via `pnpm dlx shadcn@latest add <component>` — never
-  write them from scratch
+- Add new components via `pnpm dlx shadcn@latest add <component>` when the
+  CLI works for the component in question; `chart.tsx` was added by hand
+  because the CLI currently fails on this project's zod v4 (see
+  `architecture.md`) — treat it as CLI-managed anyway
 - Use `cn()` from `src/lib/utils.ts` for all conditional class merging
 - Use `class-variance-authority` for variant-based components
+- No `table.tsx` primitive exists; the orders table
+  (`src/features/orders/orders-table.tsx`) is a plain semantic `<table>`
+  with Tailwind classes — add a shadcn table component instead of a second
+  hand-rolled one if another table is ever needed
 
 ## Icons
 
 - **Lucide React** (`lucide-react`) — primary icon set, stroke-based
-- **Tabler Icons** (`@tabler/icons-react`) — supplemental (used by the theme
-  toggle)
+- **Tabler Icons** (`@tabler/icons-react`) — supplemental (used by the
+  theme toggle and `PageShell`'s built-in error/empty icons)
 - Sizes: `h-4 w-4` for inline, `h-5 w-5` for buttons
 
 ## Layout Patterns
 
-- **Chat app shell:** a conversation-list sidebar (built on
-  `components/ui/sidebar.tsx`) alongside a message panel — the sidebar holds
-  the conversation list + search/new-conversation entry point, the panel
-  holds the open conversation's message history and composer.
-- **New conversation / group creation:** shadcn `Dialog`, with `Command` for
-  the user search/select list.
-- **Mobile:** the sidebar collapses to an off-canvas `Sheet` (shadcn's
-  sidebar component handles this out of the box).
-- **Toasts:** `sonner` — use `toast()` for all notifications (failed sends,
-  errors, etc).
+- **App shell:** a slim top nav (`src/components/layout/app-shell.tsx`,
+  52px/`h-13` tall) with the brand mark, Dashboard/Orders links, theme
+  toggle, and logout — rendered by the protected route group's layout
+  (`src/app/(protected)/layout.tsx`) once the auth gate passes.
+- **Page structure:** every page body is wrapped in
+  `src/components/layout/page-shell.tsx` (title/description/actions
+  header + built-in loading/error/empty slots) inside
+  `page-container.tsx` (scrollable content area).
+- **Dashboard panels:** 4 stat cards in a responsive grid, two charts
+  side-by-side on large screens, recent orders + recent activity below —
+  each panel is its own React Query consumer with independent
+  loading/error states, not one page-level spinner.
+- **Orders filters:** a responsive flex row (search input, status
+  `Select`, two native `<input type="date">` fields) above the table.
+- **Order detail:** a shadcn `Sheet` (`components/ui/sheet.tsx`), opened
+  via a `?orderId=` URL param rather than local dialog state, so it's
+  deep-linkable.
+- **Mobile:** the app shell's nav stays visible (icons + labels wrap to
+  icons-only if needed); dashboard grids and the filters row stack to a
+  single column below the `sm`/`lg` breakpoints; the orders table scrolls
+  horizontally within its own bordered container rather than the page.
+- **Toasts:** `sonner` — use `toast()` for all notifications (failed
+  logins, etc).
 - **Loading/empty/error states:** `Skeleton` for loading, and simple
   centered empty/error states with a retry action where relevant — see
-  `src/components/layout/page-shell.tsx` for the established pattern.
+  `src/components/layout/page-shell.tsx` for the page-level pattern, and
+  each dashboard panel / the orders list for the finer-grained,
+  independently-loading version of the same pattern.

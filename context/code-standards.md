@@ -18,9 +18,11 @@
   wrap client-only logic in a `'use client'` component instead
 - `cookies()`, `headers()`, `params`, `searchParams` are async in Next.js 16
   — always `await` them
-- Route groups: use `(name)` to group without affecting the URL
-- There is no backend of our own — no API routes talk to a database. Client
-  code calls the external chat API directly via the shared Axios instance.
+- Route groups: use `(name)` to group without affecting the URL — `(protected)`
+  wraps every authenticated route (`/`, `/orders`) behind one auth-gated layout
+- There's no real database — Route Handlers under `src/app/api/` read/write
+  the mock JSON dataset in `src/data/`. Client code calls these routes
+  through the shared Axios instance, exactly as it would a real backend.
 
 ## Feature Organization
 
@@ -32,11 +34,14 @@
 
 ## Data Fetching
 
-- All client-side data fetching against the external API uses React Query —
-  configured in `src/lib/api-setting/`
+- All client-side data fetching uses React Query — configured in
+  `src/lib/api-setting/`
 - All HTTP requests use the shared Axios instance in `src/lib/api-setting/`
-  (bearer token attached via interceptor, `401` clears the session)
-- Real-time updates use the Socket.IO client, listening for `message:new`
+  (bearer token attached via interceptor, `401` clears the session), calling
+  this app's own `/api/...` Route Handlers with relative paths
+- Route Handlers do their own filtering/sorting/pagination/date-bucketing
+  server-side (see `src/lib/server/`) — don't re-implement that logic
+  client-side; consume the already-shaped response
 
 ## Forms
 
