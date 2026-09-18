@@ -141,13 +141,6 @@ function PageHeader({
   description?: string;
   actions?: ReactNode;
 }) {
-  const today = new Date().toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric'
-  });
-
   return (
     <div className='flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>
       <div className='space-y-1'>
@@ -158,12 +151,9 @@ function PageHeader({
           <p className='text-muted-foreground text-sm'>{description}</p>
         )}
       </div>
-      <div className='flex shrink-0 items-center gap-3'>
-        {actions}
-        <time className='text-muted-foreground hidden pt-1 text-sm sm:block'>
-          {today}
-        </time>
-      </div>
+      {actions && (
+        <div className='flex shrink-0 items-center gap-3'>{actions}</div>
+      )}
     </div>
   );
 }
