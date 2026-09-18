@@ -20,7 +20,7 @@ export function OrdersView() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { filters, setQuery, setStatus, setDateRange, setPage } =
+  const { filters, setQuery, setStatus, setDateRange, setPage, resetFilters } =
     useOrdersFilters();
 
   const orderId = searchParams.get('orderId');
@@ -64,6 +64,7 @@ export function OrdersView() {
           onQueryChange={setQuery}
           onStatusChange={setStatus}
           onDateRangeChange={setDateRange}
+          onReset={resetFilters}
         />
 
         {isError && !data ? (

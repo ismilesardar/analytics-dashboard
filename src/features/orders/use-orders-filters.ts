@@ -62,6 +62,10 @@ export function useOrdersFilters() {
     (page: number) => updateParams({ page }),
     [updateParams]
   );
+  const resetFilters = useCallback(
+    () => updateParams({ q: '', status: 'all', from: null, to: null }, true),
+    [updateParams]
+  );
 
-  return { filters, setQuery, setStatus, setDateRange, setPage };
+  return { filters, setQuery, setStatus, setDateRange, setPage, resetFilters };
 }

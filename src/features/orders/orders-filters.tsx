@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Search } from 'lucide-react';
+import { RotateCcw, Search } from 'lucide-react';
 
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -29,15 +30,27 @@ interface OrdersFiltersBarProps {
   onQueryChange: (q: string) => void;
   onStatusChange: (status: OrderStatus | 'all') => void;
   onDateRangeChange: (from: string | null, to: string | null) => void;
+  onReset: () => void;
 }
 
 export function OrdersFiltersBar({
   filters,
   onQueryChange,
   onStatusChange,
-  onDateRangeChange
+  onDateRangeChange,
+  onReset
 }: OrdersFiltersBarProps) {
   const [searchInput, setSearchInput] = useState(filters.q);
+  const hasActiveFilters =
+    filters.q !== '' ||
+    filters.status !== 'all' ||
+    filters.from !== null ||
+    filters.to !== null;
+
+  const handleReset = () => {
+    setSearchInput('');
+    onReset();
+  };
   const debouncedSearch = useDebounce(searchInput, 300);
 
   useEffect(() => {
@@ -98,6 +111,17 @@ export function OrdersFiltersBar({
           aria-label='To date'
         />
       </div>
+
+      <Button
+        variant='ghost'
+        size='sm'
+        onClick={handleReset}
+        disabled={!hasActiveFilters}
+        className='shrink-0'
+      >
+        <RotateCcw />
+        Reset
+      </Button>
     </div>
   );
 }
