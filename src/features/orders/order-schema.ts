@@ -1,7 +1,16 @@
 import { z } from 'zod';
 
+export const ORDER_STATUS_OPTIONS = [
+  'pending',
+  'processing',
+  'shipped',
+  'delivered',
+  'cancelled'
+] as const;
+
 export const createOrderSchema = z.object({
   customerId: z.string().min(1, 'Select a customer'),
+  status: z.enum(ORDER_STATUS_OPTIONS),
   items: z
     .array(
       z.object({

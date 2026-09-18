@@ -21,4 +21,5 @@ export interface Order {
   createdAt: string;
   updatedAt: string;
   items: OrderItem[];
+  isUserCreated?: boolean;
 }

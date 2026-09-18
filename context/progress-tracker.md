@@ -82,6 +82,47 @@ end-to-end pass.
   customer, added an item, submitted, got the "Order created" toast, and
   the new order appeared at the top of the table with the pagination count
   incremented — zero console errors.
+- **Delete-order option added, scoped to user-created orders only**: since
+  orders have no ownership/session concept (no `createdBy`, one seeded
+  user), added an `isUserCreated?: boolean` flag on `Order`, set to `true`
+  only by `POST /api/orders`. A new `DELETE /api/orders/[id]` handler
+  404s on an unknown id and 403s if `isUserCreated` isn't set, otherwise
+  splices the order out of the in-memory array. The orders table shows a
+  delete icon only on rows where `isUserCreated` is true (seeded rows show
+  none), guarded by a shadcn `AlertDialog` confirmation before calling the
+  new `deleteOrder` client API — same `useMutation`/toast/query-invalidate
+  pattern as order creation.
+- **Fixed dashboard not reflecting order create/delete**: two separate
+  bugs. (1) The create/delete mutations only invalidated the
+  `['orders', 'list']` query key, which is not a prefix of the dashboard's
+  `['orders', 'recent', 6]` key used by the Recent Orders card, so that
+  card never refetched — widened both invalidations to the root keys
+  `['orders']` and `['activities']`, covering every query under each. (2)
+  `POST /api/orders` and `DELETE /api/orders/[id]` never wrote to the
+  `activities` dataset, so the System Activity card had nothing new to
+  fetch regardless of caching — both routes now `unshift` a matching
+  `SystemActivity` (`order_created` / `order_cancelled`) onto the shared
+  in-memory `activities` array from `dataset.ts`, same pattern as `orders`.
+- **Added a status field to order creation**: `CreateOrderSheet` previously
+  had no way to set an order's starting status — `POST /api/orders`
+  hardcoded `status: 'pending'`. Added a `status` `Select` field (options
+  from a new `ORDER_STATUS_OPTIONS` in `order-schema.ts`, defaulting to
+  `pending`) between the customer picker and the line items, and the
+  server schema/handler now validates and uses the submitted status
+  instead of hardcoding it. Exported the existing `STATUS_LABELS` map from
+  `order-status-badge.tsx` so the form reuses the same labels as the table
+  badges instead of duplicating them.
+- **Added status-change for user-created orders**: same `isUserCreated`
+  scoping already used for delete. New `PATCH /api/orders/[id]` validates
+  the submitted status, 404s if the order is missing, 403s if it isn't
+  user-created, otherwise updates `status`/`updatedAt` and logs an
+  `order_status_changed` activity (mirrors the `order_created`/
+  `order_cancelled` activity writes added earlier). In the orders table,
+  user-created rows now render an inline `Select` (stopping click
+  propagation so it doesn't open the detail sheet) instead of the static
+  `OrderStatusBadge`; seeded rows are unaffected. Wired through a new
+  `statusMutation` in `OrdersView` with the same toast/invalidate pattern
+  as create/delete.
 
 ## In Progress
 

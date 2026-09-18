@@ -33,9 +33,11 @@ import {
   SheetHeader,
   SheetTitle
 } from '@/components/ui/sheet';
+import { STATUS_LABELS } from '@/components/order-status-badge';
 import { createOrder, getCustomers } from './api';
 import {
   createOrderSchema,
+  ORDER_STATUS_OPTIONS,
   type CreateOrderFormInput,
   type CreateOrderFormValues
 } from './order-schema';
@@ -61,7 +63,7 @@ export function CreateOrderSheet({
 
   const form = useForm<CreateOrderFormInput, unknown, CreateOrderFormValues>({
     resolver: zodResolver(createOrderSchema),
-    defaultValues: { customerId: '', items: [emptyItem] },
+    defaultValues: { customerId: '', status: 'pending', items: [emptyItem] },
     mode: 'onChange'
   });
 
@@ -72,14 +74,15 @@ export function CreateOrderSheet({
 
   useEffect(() => {
     if (!open) {
-      form.reset({ customerId: '', items: [emptyItem] });
+      form.reset({ customerId: '', status: 'pending', items: [emptyItem] });
     }
   }, [open, form]);
 
   const mutation = useMutation({
     mutationFn: createOrder,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['orders', 'list'] });
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['activities'] });
       toast.success('Order created');
       onOpenChange(false);
     },
@@ -127,6 +130,31 @@ export function CreateOrderSheet({
                       {customers?.map((customer) => (
                         <SelectItem key={customer.id} value={customer.id}>
                           {customer.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name='status'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Status</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger className='w-full'>
+                        <SelectValue placeholder='Select a status' />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {ORDER_STATUS_OPTIONS.map((status) => (
+                        <SelectItem key={status} value={status}>
+                          {STATUS_LABELS[status]}
                         </SelectItem>
                       ))}
                     </SelectContent>

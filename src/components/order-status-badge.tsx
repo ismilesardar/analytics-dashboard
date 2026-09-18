@@ -10,7 +10,7 @@ const STATUS_STYLES: Record<OrderStatus, string> = {
   cancelled: 'bg-destructive/15 text-destructive border-destructive/30'
 };
 
-const STATUS_LABELS: Record<OrderStatus, string> = {
+export const STATUS_LABELS: Record<OrderStatus, string> = {
   pending: 'Pending',
   processing: 'Processing',
   shipped: 'Shipped',

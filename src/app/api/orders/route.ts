@@ -2,10 +2,12 @@ import { NextRequest } from 'next/server';
 import { z } from 'zod';
 
 import {
+  activities,
   customers,
   orders,
   type Order,
-  type OrderStatus
+  type OrderStatus,
+  type SystemActivity
 } from '@/lib/server/dataset';
 import { paginate } from '@/lib/server/pagination';
 import { ok, okPaginated, fail } from '@/lib/server/response';
@@ -102,6 +104,7 @@ export async function GET(request: NextRequest) {
 
 const createOrderBodySchema = z.object({
   customerId: z.string().min(1),
+  status: z.enum(ORDER_STATUSES as [OrderStatus, ...OrderStatus[]]),
   items: z
     .array(
       z.object({
@@ -125,7 +128,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { customerId, items } = parsed.data;
+  const { customerId, status, items } = parsed.data;
   const customer = customers.find((c) => c.id === customerId);
 
   if (!customer) {
@@ -141,15 +144,26 @@ export async function POST(request: NextRequest) {
     id: `ord_${String(orders.length + 1).padStart(5, '0')}`,
     customerId: customer.id,
     customerName: customer.name,
-    status: 'pending',
+    status,
     amount,
     currency: 'USD',
     createdAt: now,
     updatedAt: now,
-    items
+    items,
+    isUserCreated: true
   };
 
   orders.unshift(newOrder);
+
+  const newActivity: SystemActivity = {
+    id: `act_${String(activities.length + 1).padStart(5, '0')}`,
+    type: 'order_created',
+    message: `Order #${newOrder.id} was placed`,
+    relatedOrderId: newOrder.id,
+    relatedCustomerId: newOrder.customerId,
+    createdAt: now
+  };
+  activities.unshift(newActivity);
 
   return ok(newOrder, 201);
 }

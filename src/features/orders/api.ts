@@ -1,6 +1,12 @@
 import { api } from '@/lib/api-setting/axios';
 import type { CreateOrderFormValues } from './order-schema';
-import type { Customer, Order, OrdersFilters, OrdersResponse } from './types';
+import type {
+  Customer,
+  Order,
+  OrderStatus,
+  OrdersFilters,
+  OrdersResponse
+} from './types';
 
 export async function getOrders(
   filters: OrdersFilters
@@ -27,6 +33,20 @@ export async function createOrder(
   input: CreateOrderFormValues
 ): Promise<Order> {
   const res = await api.post<{ data: Order }>('/api/orders', input);
+  return res.data.data;
+}
+
+export async function deleteOrder(id: string): Promise<void> {
+  await api.delete(`/api/orders/${id}`);
+}
+
+export async function updateOrderStatus(
+  id: string,
+  status: OrderStatus
+): Promise<Order> {
+  const res = await api.patch<{ data: Order }>(`/api/orders/${id}`, {
+    status
+  });
   return res.data.data;
 }
 
