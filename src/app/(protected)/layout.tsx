@@ -4,7 +4,10 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { useAuthHasHydrated, useAuthStore } from '@/features/auth/store';
-import { AppShell } from '@/components/layout/app-shell';
+import { AppSidebar } from '@/components/layout/app-sidebar';
+import Header from '@/components/layout/header';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
 
 export default function ProtectedLayout({
@@ -38,5 +41,15 @@ export default function ProtectedLayout({
     );
   }
 
-  return <AppShell>{children}</AppShell>;
+  return (
+    <SidebarProvider className='gap-1 bg-neutral-200/90! dark:bg-neutral-800!'>
+      <AppSidebar />
+      <SidebarInset className='h-[calc(100dvh-15px)]! overflow-hidden! bg-white dark:bg-neutral-950/90'>
+        <Header />
+        <ScrollArea className='h-[calc(100%-64px)] rounded-md'>
+          {children}
+        </ScrollArea>
+      </SidebarInset>
+    </SidebarProvider>
+  );
 }
