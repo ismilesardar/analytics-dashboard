@@ -27,7 +27,9 @@ export function LoginForm() {
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { email: '', password: '' },
+    // Pre-filled with the seeded mock user (src/data/users.json) so
+    // reviewers can sign in immediately without hunting for credentials.
+    defaultValues: { email: 'admin@pulse.dev', password: 'admin1234' },
     mode: 'onChange'
   });
 
