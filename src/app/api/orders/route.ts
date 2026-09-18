@@ -1,8 +1,14 @@
 import { NextRequest } from 'next/server';
+import { z } from 'zod';
 
-import { orders, type Order, type OrderStatus } from '@/lib/server/dataset';
+import {
+  customers,
+  orders,
+  type Order,
+  type OrderStatus
+} from '@/lib/server/dataset';
 import { paginate } from '@/lib/server/pagination';
-import { okPaginated, fail } from '@/lib/server/response';
+import { ok, okPaginated, fail } from '@/lib/server/response';
 
 const ORDER_STATUSES: OrderStatus[] = [
   'pending',
@@ -92,4 +98,58 @@ export async function GET(request: NextRequest) {
   const { data, meta } = paginate(sorted, page, pageSize);
 
   return okPaginated(data, meta);
+}
+
+const createOrderBodySchema = z.object({
+  customerId: z.string().min(1),
+  items: z
+    .array(
+      z.object({
+        productName: z.string().trim().min(1),
+        quantity: z.coerce.number().int().min(1),
+        unitPrice: z.coerce.number().min(0)
+      })
+    )
+    .min(1)
+});
+
+export async function POST(request: NextRequest) {
+  const body = await request.json().catch(() => null);
+  const parsed = createOrderBodySchema.safeParse(body);
+
+  if (!parsed.success) {
+    return fail(
+      'INVALID_REQUEST',
+      'A customer and at least one item are required.',
+      400
+    );
+  }
+
+  const { customerId, items } = parsed.data;
+  const customer = customers.find((c) => c.id === customerId);
+
+  if (!customer) {
+    return fail('NOT_FOUND', 'Customer not found.', 404);
+  }
+
+  const amount = items.reduce(
+    (sum, item) => sum + item.quantity * item.unitPrice,
+    0
+  );
+  const now = new Date().toISOString();
+  const newOrder: Order = {
+    id: `ord_${String(orders.length + 1).padStart(5, '0')}`,
+    customerId: customer.id,
+    customerName: customer.name,
+    status: 'pending',
+    amount,
+    currency: 'USD',
+    createdAt: now,
+    updatedAt: now,
+    items
+  };
+
+  orders.unshift(newOrder);
+
+  return ok(newOrder, 201);
 }

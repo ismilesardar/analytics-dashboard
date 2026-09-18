@@ -1,14 +1,15 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Plus } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { PageShell } from '@/components/layout/page-shell';
 import { useMinLoadingDuration } from '@/hooks/use-min-loading-duration';
 import { getOrders } from './api';
+import { CreateOrderSheet } from './create-order-sheet';
 import { OrderDetailSheet } from './order-detail-sheet';
 import { OrdersFiltersBar } from './orders-filters';
 import { OrdersPagination } from './orders-pagination';
@@ -20,6 +21,7 @@ export function OrdersView() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [isCreateOpen, setCreateOpen] = useState(false);
   const { filters, setQuery, setStatus, setDateRange, setPage, resetFilters } =
     useOrdersFilters();
 
@@ -57,6 +59,12 @@ export function OrdersView() {
       title='Orders'
       description='Search, filter, and review every order.'
       isLoading={isLoading}
+      actions={
+        <Button onClick={() => setCreateOpen(true)}>
+          <Plus className='mr-2 size-4' />
+          Add order
+        </Button>
+      }
     >
       <div className='space-y-4'>
         <OrdersFiltersBar
@@ -92,6 +100,7 @@ export function OrdersView() {
       </div>
 
       <OrderDetailSheet orderId={orderId} onClose={closeOrder} />
+      <CreateOrderSheet open={isCreateOpen} onOpenChange={setCreateOpen} />
     </PageShell>
   );
 }

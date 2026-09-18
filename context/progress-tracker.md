@@ -68,6 +68,20 @@ end-to-end pass.
   indicator was pinned to `top-right` in `next.config.ts` — the same
   corner as the app header's theme toggle/logout controls — and its
   portal was intercepting clicks on them. Moved to `bottom-right`.
+- **Create-order flow added to the orders feature**: an "Add order" button
+  in the `PageShell` actions slot opens a `CreateOrderSheet`
+  (react-hook-form + Zod, matching the login form's pattern) with a
+  customer `Select` (new `GET /api/customers`) and a `useFieldArray` of
+  line items. Submits to a new `POST /api/orders` handler that validates
+  the body, looks up the customer, computes `amount`/`id`/timestamps
+  server-side, and `unshift`s onto the in-memory `orders` array from
+  `dataset.ts` — consistent with how every other route in this app already
+  works. **Not persisted to disk**: created orders live only for the
+  process lifetime and are lost on restart/hot-reload, same as the rest of
+  the mock dataset. Verified end-to-end in-browser (Playwright): picked a
+  customer, added an item, submitted, got the "Order created" toast, and
+  the new order appeared at the top of the table with the pagination count
+  incremented — zero console errors.
 
 ## In Progress
 

@@ -1,7 +1,8 @@
 import type { Order, OrderStatus } from '@/types/order';
+import type { Customer } from '@/lib/server/dataset';
 import type { PaginationMeta } from '@/lib/server/pagination';
 
-export type { Order, OrderStatus };
+export type { Order, OrderStatus, Customer };
 
 export interface OrdersFilters {
   q: string;
