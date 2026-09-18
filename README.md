@@ -1,5 +1,7 @@
 # Pulse — Production Analytics Dashboard
 
+<img width="1282" height="695" alt="image" src="https://github.com/user-attachments/assets/88381a65-5611-4cc3-8327-ab0a8f57c19a" />
+
 A SaaS analytics dashboard for a business managing customers, orders, and
 system activity: revenue/orders/customer stat cards, revenue and orders
 charts, recent orders and system activity, and a searchable/filterable/
