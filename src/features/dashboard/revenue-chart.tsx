@@ -11,6 +11,7 @@ import {
   type ChartConfig
 } from '@/components/ui/chart';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useMinLoadingDuration } from '@/hooks/use-min-loading-duration';
 import { formatCurrency, formatDate } from '@/lib/format';
 import { getChartSeries } from './api';
 import { dashboardKeys } from './query-keys';
@@ -21,10 +22,15 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export function RevenueChart({ period }: { period: ChartPeriod }) {
-  const { data, isLoading, isError } = useQuery({
+  const {
+    data,
+    isLoading: isLoadingQuery,
+    isError
+  } = useQuery({
     queryKey: dashboardKeys.charts(period),
     queryFn: () => getChartSeries(period)
   });
+  const isLoading = useMinLoadingDuration(isLoadingQuery);
 
   return (
     <Card>

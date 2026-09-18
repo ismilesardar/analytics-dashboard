@@ -7,6 +7,7 @@ import { AlertCircle } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { PageShell } from '@/components/layout/page-shell';
+import { useMinLoadingDuration } from '@/hooks/use-min-loading-duration';
 import { getOrders } from './api';
 import { OrderDetailSheet } from './order-detail-sheet';
 import { OrdersFiltersBar } from './orders-filters';
@@ -39,17 +40,23 @@ export function OrdersView() {
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
   }, [router, pathname, searchParams]);
 
-  const { data, isLoading, isError, refetch } = useQuery({
+  const {
+    data,
+    isLoading: isLoadingQuery,
+    isError,
+    refetch
+  } = useQuery({
     queryKey: ordersKeys.list(filters),
     queryFn: () => getOrders(filters),
     placeholderData: keepPreviousData
   });
+  const isLoading = useMinLoadingDuration(isLoadingQuery && !data);
 
   return (
     <PageShell
       title='Orders'
       description='Search, filter, and review every order.'
-      isLoading={isLoading && !data}
+      isLoading={isLoading}
     >
       <div className='space-y-4'>
         <OrdersFiltersBar

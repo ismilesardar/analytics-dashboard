@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useMinLoadingDuration } from '@/hooks/use-min-loading-duration';
 import { getActivities } from './api';
 import { dashboardKeys } from './query-keys';
 import type { ActivityType } from './types';
@@ -30,10 +31,16 @@ const ACTIVITY_ICONS: Record<ActivityType, typeof Package> = {
 };
 
 export function RecentActivities() {
-  const { data, isLoading, isError, refetch } = useQuery({
+  const {
+    data,
+    isLoading: isLoadingQuery,
+    isError,
+    refetch
+  } = useQuery({
     queryKey: dashboardKeys.activities(LIMIT),
     queryFn: () => getActivities(LIMIT)
   });
+  const isLoading = useMinLoadingDuration(isLoadingQuery);
 
   return (
     <Card>

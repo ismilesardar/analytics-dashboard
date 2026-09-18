@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { OrderStatusBadge } from '@/components/order-status-badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useMinLoadingDuration } from '@/hooks/use-min-loading-duration';
 import { formatCurrency, formatDate } from '@/lib/format';
 import { getRecentOrders } from './api';
 import { dashboardKeys } from './query-keys';
@@ -14,10 +15,16 @@ import { dashboardKeys } from './query-keys';
 const LIMIT = 6;
 
 export function RecentOrders() {
-  const { data, isLoading, isError, refetch } = useQuery({
+  const {
+    data,
+    isLoading: isLoadingQuery,
+    isError,
+    refetch
+  } = useQuery({
     queryKey: dashboardKeys.recentOrders(LIMIT),
     queryFn: () => getRecentOrders(LIMIT)
   });
+  const isLoading = useMinLoadingDuration(isLoadingQuery);
 
   return (
     <Card>

@@ -12,6 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useMinLoadingDuration } from '@/hooks/use-min-loading-duration';
 import { formatCurrency } from '@/lib/format';
 import { getSummary } from './api';
 import { dashboardKeys } from './query-keys';
@@ -50,10 +51,16 @@ const CARDS: {
 ];
 
 export function StatCards() {
-  const { data, isLoading, isError, refetch } = useQuery({
+  const {
+    data,
+    isLoading: isLoadingQuery,
+    isError,
+    refetch
+  } = useQuery({
     queryKey: dashboardKeys.summary,
     queryFn: getSummary
   });
+  const isLoading = useMinLoadingDuration(isLoadingQuery);
 
   if (isLoading) {
     return (
